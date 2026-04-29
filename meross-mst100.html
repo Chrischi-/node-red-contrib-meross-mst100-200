@@ -1,0 +1,291 @@
+<script type="text/javascript">
+  RED.nodes.registerType("meross cloud config", {
+    category: "config",
+    defaults: {
+      name: { value: "" },
+      email: { value: "" },
+      password: { value: "" },
+      baseUrl: { value: "https://iotx-eu.meross.com" },
+      loginPath: { value: "/v1/Auth/signIn" },
+      countryCode: { value: "us" },
+      locale: { value: "de_DE" },
+      mfaCode: { value: "" }
+    },
+    label: function () {
+      return this.name || this.email || "Meross cloud";
+    },
+    oneditprepare: function () {
+      // Add any custom validation or initialization here
+    }
+  });
+
+  function merossHubSprinklerDefinition(modelName) {
+    return {
+      category: "function",
+      color: "#f2b134",
+      defaults: {
+        name: { value: "" },
+        cloud: { type: "meross cloud config", required: true },
+        hubId: { value: "" },
+        hubHost: { value: "" },
+        subDeviceId: { value: "" },
+        deviceId: { value: "" },
+        channel: { value: 0, validate: RED.validators.number() },
+        command: { value: "rawRequest" },
+        method: { value: "POST" },
+        path: { value: "/v1/Device/Status" },
+        onoff: { value: true },
+        duration: { value: "" }
+      },
+      inputs: 1,
+      outputs: 1,
+      icon: "font-awesome/fa-tint",
+      label: function () {
+        return this.name || `Meross ${modelName}`;
+      },
+      oneditprepare: function () {
+        // Show/hide relevant fields based on command selection
+        const commandField = $("#node-input-command");
+        const updateVisibility = function () {
+          const cmd = commandField.val();
+          $("#row-hubId").toggle(cmd === "listSubDevices" || cmd === "subStatus" || cmd === "subSwitch");
+          $("#row-hubHost").toggle(cmd === "subStatus" || cmd === "subSwitch");
+          $("#row-subDeviceId").toggle(cmd === "subStatus" || cmd === "subSwitch");
+          $("#row-deviceId").toggle(cmd === "status" || cmd === "switch" || cmd === "rawRequest");
+          $("#row-channel").toggle(cmd === "status" || cmd === "switch" || cmd === "subStatus" || cmd === "subSwitch");
+          $("#row-method").toggle(cmd === "rawRequest");
+          $("#row-path").toggle(cmd === "rawRequest");
+          $("#row-onoff").toggle(cmd === "subSwitch");
+          $("#row-duration").toggle(cmd === "subSwitch");
+        };
+        commandField.on("change", updateVisibility);
+        updateVisibility();
+      }
+    };
+  }
+
+  RED.nodes.registerType("meross mst100", merossHubSprinklerDefinition("MST100"));
+  RED.nodes.registerType("meross mst200", merossHubSprinklerDefinition("MST200"));
+</script>
+
+<script type="text/x-red" data-template-name="meross cloud config">
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Optional name">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-email"><i class="fa fa-envelope"></i> Email</label>
+    <input type="text" id="node-config-input-email" placeholder="your@email.com">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-config-input-password">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-baseUrl">Base URL</label>
+    <input type="text" id="node-config-input-baseUrl" placeholder="https://iotx-eu.meross.com">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-loginPath">Login path</label>
+    <input type="text" id="node-config-input-loginPath" placeholder="/v1/Auth/signIn">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-countryCode">Country code</label>
+    <input type="text" id="node-config-input-countryCode" placeholder="us" style="width: 50px;">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-locale">Locale</label>
+    <input type="text" id="node-config-input-locale" placeholder="de_DE" style="width: 80px;">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-mfaCode">MFA code (optional)</label>
+    <input type="text" id="node-config-input-mfaCode" placeholder="6-digit code">
+  </div>
+</script>
+
+<script type="text/x-red" data-template-name="meross mst100">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Optional name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-cloud"><i class="fa fa-cloud"></i> Cloud config</label>
+    <input type="text" id="node-input-cloud">
+  </div>
+  <div class="form-row" id="row-hubId">
+    <label for="node-input-hubId"><i class="fa fa-dot-circle-o"></i> Hub UUID</label>
+    <input type="text" id="node-input-hubId" placeholder="Hub device UUID">
+  </div>
+  <div class="form-row" id="row-hubHost">
+    <label for="node-input-hubHost"><i class="fa fa-server"></i> Hub host</label>
+    <input type="text" id="node-input-hubHost" placeholder="192.168.1.55">
+  </div>
+  <div class="form-row" id="row-subDeviceId">
+    <label for="node-input-subDeviceId"><i class="fa fa-tint"></i> MST100/MST200 subdevice ID</label>
+    <input type="text" id="node-input-subDeviceId" placeholder="Subdevice ID">
+  </div>
+  <div class="form-row" id="row-deviceId">
+    <label for="node-input-deviceId"><i class="fa fa-hdd-o"></i> Device UUID</label>
+    <input type="text" id="node-input-deviceId" placeholder="Device UUID">
+  </div>
+  <div class="form-row" id="row-channel">
+    <label for="node-input-channel">Channel</label>
+    <input type="number" id="node-input-channel" value="0" min="0" style="width: 60px;">
+  </div>
+  <div class="form-row">
+    <label for="node-input-command"><i class="fa fa-bolt"></i> Command</label>
+    <select id="node-input-command">
+      <option value="rawRequest">Raw request</option>
+      <option value="listDevices">List devices</option>
+      <option value="listSubDevices">List subdevices</option>
+      <option value="status">Device status</option>
+      <option value="switch">Device on/off</option>
+      <option value="subStatus">MST100/MST200 status</option>
+      <option value="subSwitch">MST100/MST200 start/stop</option>
+    </select>
+  </div>
+  <div class="form-row" id="row-method">
+    <label for="node-input-method">Method</label>
+    <input type="text" id="node-input-method" placeholder="POST" style="width: 80px;">
+  </div>
+  <div class="form-row" id="row-path">
+    <label for="node-input-path">Path</label>
+    <input type="text" id="node-input-path" placeholder="/v1/Device/Status">
+  </div>
+  <div class="form-row" id="row-onoff">
+    <label for="node-input-onoff">Default on/off</label>
+    <select id="node-input-onoff" style="width: 80px;">
+      <option value="true">ON</option>
+      <option value="false">OFF</option>
+    </select>
+  </div>
+  <div class="form-row" id="row-duration">
+    <label for="node-input-duration">Duration (seconds)</label>
+    <input type="number" id="node-input-duration" placeholder="Optional" min="0" style="width: 100px;">
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="meross mst100">
+  <p>Meross MST100 sprinkler control node.</p>
+  <h3>Configuration</h3>
+  <dl class="message-properties">
+    <dt>Cloud config <span class="property-type">config</span></dt>
+    <dd>Select a Meross cloud configuration node with your credentials.</dd>
+  </dl>
+  <h3>Commands</h3>
+  <ul>
+    <li><b>Raw request</b> - Send arbitrary API requests</li>
+    <li><b>List devices</b> - Get all devices from cloud</li>
+    <li><b>List subdevices</b> - Get devices connected to a hub</li>
+    <li><b>Device status</b> - Get device status</li>
+    <li><b>Device on/off</b> - Turn device on or off</li>
+    <li><b>MST100/MST200 status</b> - Get sprinkler status via hub</li>
+    <li><b>MST100/MST200 start/stop</b> - Start or stop sprinkler via hub</li>
+  </ul>
+  <p>For MST100, subdevice commands use the water control namespace. Channel and duration are supported.</p>
+  <h3>Input</h3>
+  <p>Messages can override node configuration:</p>
+  <ul>
+    <li><code>msg.command</code> - Override command</li>
+    <li><code>msg.deviceId</code> - Override device UUID</li>
+    <li><code>msg.onoff</code> - Set on/off state (true/false)</li>
+    <li><code>msg.duration</code> - Set sprinkler duration in seconds</li>
+    <li><code>msg.payload</code> - Custom request payload</li>
+  </ul>
+  <h3>Output</h3>
+  <p>The response is sent to <code>msg.payload</code> and metadata to <code>msg.meross</code>.</p>
+</script>
+
+<script type="text/x-red" data-template-name="meross mst200">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Optional name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-cloud"><i class="fa fa-cloud"></i> Cloud config</label>
+    <input type="text" id="node-input-cloud">
+  </div>
+  <div class="form-row" id="row-hubId">
+    <label for="node-input-hubId"><i class="fa fa-dot-circle-o"></i> Hub UUID</label>
+    <input type="text" id="node-input-hubId" placeholder="Hub device UUID">
+  </div>
+  <div class="form-row" id="row-hubHost">
+    <label for="node-input-hubHost"><i class="fa fa-server"></i> Hub host</label>
+    <input type="text" id="node-input-hubHost" placeholder="192.168.1.55">
+  </div>
+  <div class="form-row" id="row-subDeviceId">
+    <label for="node-input-subDeviceId"><i class="fa fa-tint"></i> MST100/MST200 subdevice ID</label>
+    <input type="text" id="node-input-subDeviceId" placeholder="Subdevice ID">
+  </div>
+  <div class="form-row" id="row-deviceId">
+    <label for="node-input-deviceId"><i class="fa fa-hdd-o"></i> Device UUID</label>
+    <input type="text" id="node-input-deviceId" placeholder="Device UUID">
+  </div>
+  <div class="form-row" id="row-channel">
+    <label for="node-input-channel">Channel</label>
+    <input type="number" id="node-input-channel" value="0" min="0" style="width: 60px;">
+  </div>
+  <div class="form-row">
+    <label for="node-input-command"><i class="fa fa-bolt"></i> Command</label>
+    <select id="node-input-command">
+      <option value="rawRequest">Raw request</option>
+      <option value="listDevices">List devices</option>
+      <option value="listSubDevices">List subdevices</option>
+      <option value="status">Device status</option>
+      <option value="switch">Device on/off</option>
+      <option value="subStatus">MST100/MST200 status</option>
+      <option value="subSwitch">MST100/MST200 start/stop</option>
+    </select>
+  </div>
+  <div class="form-row" id="row-method">
+    <label for="node-input-method">Method</label>
+    <input type="text" id="node-input-method" placeholder="POST" style="width: 80px;">
+  </div>
+  <div class="form-row" id="row-path">
+    <label for="node-input-path">Path</label>
+    <input type="text" id="node-input-path" placeholder="/v1/Device/Status">
+  </div>
+  <div class="form-row" id="row-onoff">
+    <label for="node-input-onoff">Default on/off</label>
+    <select id="node-input-onoff" style="width: 80px;">
+      <option value="true">ON</option>
+      <option value="false">OFF</option>
+    </select>
+  </div>
+  <div class="form-row" id="row-duration">
+    <label for="node-input-duration">Duration (seconds)</label>
+    <input type="number" id="node-input-duration" placeholder="Optional" min="0" style="width: 100px;">
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="meross mst200">
+  <p>Meross MST200 sprinkler control node.</p>
+  <h3>Configuration</h3>
+  <dl class="message-properties">
+    <dt>Cloud config <span class="property-type">config</span></dt>
+    <dd>Select a Meross cloud configuration node with your credentials.</dd>
+  </dl>
+  <h3>Commands</h3>
+  <ul>
+    <li><b>Raw request</b> - Send arbitrary API requests</li>
+    <li><b>List devices</b> - Get all devices from cloud</li>
+    <li><b>List subdevices</b> - Get devices connected to a hub</li>
+    <li><b>Device status</b> - Get device status</li>
+    <li><b>Device on/off</b> - Turn device on or off</li>
+    <li><b>MST100/MST200 status</b> - Get sprinkler status via hub</li>
+    <li><b>MST100/MST200 start/stop</b> - Start or stop sprinkler via hub</li>
+  </ul>
+  <p>The current MST200 implementation uses the hub ToggleX namespace for overall on/off and status.</p>
+  <p>Per-zone control for dual-zone MST200 devices is not fully implemented yet, so the channel and duration fields currently do not affect MST200 switching.</p>
+  <h3>Input</h3>
+  <p>Messages can override node configuration:</p>
+  <ul>
+    <li><code>msg.command</code> - Override command</li>
+    <li><code>msg.deviceId</code> - Override device UUID</li>
+    <li><code>msg.onoff</code> - Set on/off state (true/false)</li>
+    <li><code>msg.duration</code> - Set sprinkler duration in seconds</li>
+    <li><code>msg.payload</code> - Custom request payload</li>
+  </ul>
+  <h3>Output</h3>
+  <p>The response is sent to <code>msg.payload</code> and metadata to <code>msg.meross</code>.</p>
+</script>

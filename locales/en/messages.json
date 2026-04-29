@@ -1,0 +1,74 @@
+{
+  "meross-mst100": {
+    "label": {
+      "category": "Meross",
+      "cloudConfig": "Meross Cloud",
+      "name": "Name"
+    },
+    "merossCloudConfig": {
+      "label": "Meross Cloud Configuration",
+      "defaults": {
+        "name": { "label": "Name" },
+        "email": { "label": "Email" },
+        "password": { "label": "Password" },
+        "baseUrl": { "label": "Base URL" },
+        "loginPath": { "label": "Login path" },
+        "countryCode": { "label": "Country code" },
+        "locale": { "label": "Locale" },
+        "mfaCode": { "label": "MFA code" }
+      }
+    },
+    "merossMst100": {
+      "label": "Meross MST100",
+      "defaults": {
+        "name": { "label": "Name" },
+        "cloud": { "label": "Cloud config" },
+        "hubId": { "label": "Hub UUID" },
+        "hubHost": { "label": "Hub host" },
+        "subDeviceId": { "label": "MST100/MST200 subdevice ID" },
+        "deviceId": { "label": "Device UUID" },
+        "channel": { "label": "Channel" },
+        "command": { "label": "Command" },
+        "method": { "label": "Method" },
+        "path": { "label": "Path" },
+        "onoff": { "label": "Default on/off" },
+        "duration": { "label": "Duration (seconds)" }
+      },
+      "command": {
+        "rawRequest": "Raw request",
+        "listDevices": "List devices",
+        "listSubDevices": "List subdevices",
+        "status": "Device status",
+        "switch": "Device on/off",
+        "subStatus": "MST100/MST200 status",
+        "subSwitch": "MST100/MST200 start/stop"
+      }
+    },
+    "merossMst200": {
+      "label": "Meross MST200",
+      "defaults": {
+        "name": { "label": "Name" },
+        "cloud": { "label": "Cloud config" },
+        "hubId": { "label": "Hub UUID" },
+        "hubHost": { "label": "Hub host" },
+        "subDeviceId": { "label": "MST100/MST200 subdevice ID" },
+        "deviceId": { "label": "Device UUID" },
+        "channel": { "label": "Channel" },
+        "command": { "label": "Command" },
+        "method": { "label": "Method" },
+        "path": { "label": "Path" },
+        "onoff": { "label": "Default on/off" },
+        "duration": { "label": "Duration (seconds)" }
+      },
+      "command": {
+        "rawRequest": "Raw request",
+        "listDevices": "List devices",
+        "listSubDevices": "List subdevices",
+        "status": "Device status",
+        "switch": "Device on/off",
+        "subStatus": "MST100/MST200 status",
+        "subSwitch": "MST100/MST200 start/stop"
+      }
+    }
+  }
+}
