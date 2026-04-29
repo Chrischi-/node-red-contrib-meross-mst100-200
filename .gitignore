@@ -1,6 +1,0 @@
-node_modules/
-*.tgz
-*.tar.gz
-.DS_Store
-meross-sessions.json
-.env
